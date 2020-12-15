@@ -6,7 +6,7 @@ import rospy
 import numpy as np
 import tensorflow as tf
 
-sys.path.append('/home/jerry/Documents/workspaces/human_detection/src/ROS_human_detection/human_detection/src')
+sys.path.append(os.getcwd())
 
 # For performance analysis timing, import time.
 # from analysis_tools.data_grapher import *
@@ -20,7 +20,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 # Defining Paths
-CWD_PATH = '/home/jerry/Documents/workspaces/human_detection/src/ROS_human_detection/human_detection/src'
+CWD_PATH = os.getcwd()
 LABEL_MAPS = ['human_label_map.pbtxt', 'mscoco_label_map.pbtxt']
 MODEL_NAME = 'ssd_mobilenet_v1_coco_2017_11_17'
 PATH_TO_CKPT = os.path.join(CWD_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
