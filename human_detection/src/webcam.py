@@ -5,6 +5,7 @@ import os
 import rospy
 import numpy as np
 import tensorflow as tf
+from std_srvs.srv import Trigger, TriggerResponse
 
 sys.path.append(os.getcwd())
 
@@ -20,11 +21,11 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 # Defining Paths
-CWD_PATH = os.getcwd()
+SRC_PATH = os.path.dirname(os.path.realpath(__file__))
 LABEL_MAPS = ['human_label_map.pbtxt', 'mscoco_label_map.pbtxt']
 MODEL_NAME = 'ssd_mobilenet_v1_coco_2017_11_17'
-PATH_TO_CKPT = os.path.join(CWD_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
-PATH_TO_LABELS = os.path.join(CWD_PATH + '/data', LABEL_MAPS[0])
+PATH_TO_CKPT = os.path.join(SRC_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
+PATH_TO_LABELS = os.path.join(SRC_PATH + '/data', LABEL_MAPS[0])
 
 # Load the label map.
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
@@ -127,6 +128,7 @@ class human_detector:
         list_length = 0
         bbx_list = box_list()
         bbx_list.header.stamp = data.header.stamp
+        spotted = False
 
         for score in scores[0]:
             if score > 0.6:
@@ -137,6 +139,18 @@ class human_detector:
                 coordinates.ymax = int(boxes[0, counter, 2] * screen_height)
                 coordinates.xmax = int(boxes[0, counter, 3] * screen_width)
                 bbx_list.people_list.append(coordinates)
+                rospy.wait_for_service('return_to_home')
+                try:
+                    if spotted is False:
+                        rospy.loginfo("Human spotted! Returning home")
+                        return_to_home = rospy.ServiceProxy('return_to_home', Trigger)
+                        status = return_to_home()
+                        rospy.loginfo(status.message)
+                        spotted = True
+
+                except:
+                    print("Service call failed: %s")
+
             counter += 1
 
         # print(list_length)
@@ -166,31 +180,3 @@ if __name__ == '__main__':
     print('Current Tensorflow Version: ' + str(tf.__version__))
     rospy.set_param('use_sim_time', 'True')
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
